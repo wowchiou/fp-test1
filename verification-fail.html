@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      type="image/x-icon"
+      href="./images/gBet.ico"
+      rel="shortcut icon external nofollow"
+    />
+    <title>查找不到设备</title>
+    <link rel="stylesheet" href="./css/reset.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="stylesheet" href="./css/verification.css" />
+  </head>
+  <body>
+    <div class="container" id="verification">
+      <div class="wrapper">
+        <div class="main">
+          <div class="content">
+            <div class="logo">
+              <img src="./images/logo-gb-default@3x.png" />
+            </div>
+            <div class="title">
+              <p>很抱歉！<br />查找不到符合的纪录</p>
+            </div>
+            <div class="verification-text">
+              <p>亲爱的玩家：</p>
+              <p>
+                您当前的檢查碼记录不符！无法通过验证，如果您有任何疑问，请直接联系我们的在线客服。对您造成不便，我们深表歉意。
+              </p>
+            </div>
+            <div class="verification-device">
+              <p>您当前登入檢查碼如下：</p>
+              <span id="device-code"></span>
+              <p>请紀錄檢查碼后，<br />再联系在线客服协助您。</p>
+            </div>
+          </div>
+        </div>
+        <div class="verification-pic">
+          <div class="pic-title">
+            <img src="./images/img-maintain-title@3x.png" />
+          </div>
+        </div>
+        <ul class="slogans">
+          <li>
+            <img src="./images/img-maintain-img-01@3x.png" />
+            <p>体育赛事好运连赢<br />超高礼金18888</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-02@3x.png" />
+            <p>业界最高返水回馈<br />天天返水无上限</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-03@3x.png" />
+            <p>助力新手开门红<br />欢乐签到迎喜气</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-04@3x.png" />
+            <p>累计签到送豪礼<br />启幕豪华新篇章</p>
+          </li>
+        </ul>
+        <div class="connection">
+          如果您有任何疑问，请联系
+          <a
+            href="https://secure.livechatinc.com/licence/13506624/v2/open_chat.cgi"
+            target="_blank"
+          >
+            在线客服
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const deviceId = urlParams.get('deviceId');
+      document.querySelector('#device-code').innerText = deviceId;
+    </script>
+  </body>
+</html>
