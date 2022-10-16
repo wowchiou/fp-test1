@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      type="image/x-icon"
+      href="./images/gBet.ico"
+      rel="shortcut icon external nofollow"
+    />
+    <title>验证码显示</title>
+    <link rel="stylesheet" href="./css/reset.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="stylesheet" href="./css/verification.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="./js/clipboard.min.js"></script>
+  </head>
+  <body>
+    <div class="container" id="verification">
+      <div class="wrapper">
+        <div class="main">
+          <div class="content">
+            <div class="logo">
+              <img src="./images/logo-gb-default@3x.png" />
+            </div>
+            <div class="title">
+              <p>本次驗證碼：<span id="code">loading...</span></p>
+            </div>
+            <div class="verification-subtitle">
+              <p>将于30分钟后失效，请尽速验证。</p>
+            </div>
+            <div class="verification-btn">
+              <div id="copyBtn" message="">复制</div>
+            </div>
+            <div class="verification-text">
+              <p>亲爱的玩家：</p>
+              <p>
+                我们收到回报需要对您的帐号进行安全验证，请使用上方的验证码进行帐号验证。
+              </p>
+              <p>请注意：验证码会在 30 分钟后失效，请尽快进行验证！</p>
+              <p>
+                如果您有任何疑问，请直接联系我们的在线客服。对您造成不便，我们深表歉意。
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="verification-pic">
+          <div class="pic-title">
+            <img src="./images/img-maintain-title@3x.png" />
+          </div>
+        </div>
+        <ul class="slogans">
+          <li>
+            <img src="./images/img-maintain-img-01@3x.png" />
+            <p>体育赛事好运连赢<br />超高礼金18888</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-02@3x.png" />
+            <p>业界最高返水回馈<br />天天返水无上限</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-03@3x.png" />
+            <p>助力新手开门红<br />欢乐签到迎喜气</p>
+          </li>
+          <li>
+            <img src="./images/img-maintain-img-04@3x.png" />
+            <p>累计签到送豪礼<br />启幕豪华新篇章</p>
+          </li>
+        </ul>
+        <div class="connection">
+          如果您有任何疑问，请联系
+          <a
+            href="https://secure.livechatinc.com/licence/13506624/v2/open_chat.cgi"
+            target="_blank"
+          >
+            在线客服
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+
+      let axiosInstance;
+      let deviceId;
+      let clipboard;
+
+      // const fpPromise = import('https://fpcdn.io/v3/pbbvJjn7IxCcBDXDYPWp').then(
+      //   (FingerprintJS) => FingerprintJS.load()
+      // );
+
+      // fpPromise
+      //   .then((fp) => fp.get())
+      //   .then((result) => {
+      //     deviceId = result.visitorId;
+      //     axiosInstance = axios.create({
+      //       headers: {
+      //         device_id: result.visitorId,
+      //       },
+      //     });
+      //     console.log(deviceId);
+      //     // fetchValidToken();
+      //   });
+
+      // Initialize an agent at application startup.
+      const fpPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.onload = resolve;
+        script.onerror = reject;
+        script.async = true;
+        script.src =
+          'https://cdn.jsdelivr.net/npm/' +
+          '@fingerprintjs/fingerprintjs-pro@3/dist/fp.min.js';
+        document.head.appendChild(script);
+      }).then(() =>
+        FingerprintJS.load({
+          token: 'pbbvJjn7IxCcBDXDYPWp',
+        })
+      );
+
+      // Get the visitor identifier when you need it.
+      fpPromise
+        .then((fp) => fp.get())
+        .then((result) => {
+          // This is the visitor identifier:
+          const visitorId = result.visitorId;
+          console.log(visitorId);
+        });
+
+      function fetchValidToken() {
+        axiosInstance
+          .get(
+            `https://dev.gbetgame.cc/api/gl/user/security/validToken?token=${token}`
+          )
+          .then((res) => {
+            const { code, message } = res.data;
+            // 0 : 獲取驗證碼成功, 1: 驗證碼失效, 2: 查不到設備紀錄
+            switch (code) {
+              case 0:
+                document.querySelector('#copyBtn').style.display =
+                  'inline-block';
+                clipboard = new ClipboardJS('#copyBtn', {
+                  text: function (trigger) {
+                    trigger.innerText = '已复制';
+                    return message;
+                  },
+                });
+                return;
+              case 1:
+                return redirectTo('/verification-invalid.html');
+              case 2:
+                return redirectTo(
+                  `/verification-fail.html?deviceId=${deviceId}`
+                );
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+
+      function redirectTo(url) {
+        window.location.href = url;
+      }
+    </script>
+  </body>
+</html>
