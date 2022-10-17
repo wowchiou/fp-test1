@@ -20,7 +20,7 @@
   text-align: center;
 }
 
-.verification-btn .copyBtn {
+.verification-btn #copyBtn {
   color: #fff;
   background-color: #ff8726;
   border-radius: 5px;
