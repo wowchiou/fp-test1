@@ -85,7 +85,7 @@
 
     <script>
       document.querySelector('#post-messager').addEventListener('click', () => {
-        parent.postMessage({ hello: 'test' });
+        parent.postMessage({ hello: 'test' }, 'http://127.0.0.1:5500/A.html');
       });
     </script>
 
