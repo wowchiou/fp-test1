@@ -79,6 +79,7 @@
             在线客服
           </a>
         </div>
+        <button id="post-messager">click me to send message</button>
       </div>
     </div>
 
@@ -89,6 +90,10 @@
       let loadingFingerprint;
       let axiosInstance;
       let clipboard;
+
+      document.querySelector('#post-messager').addEventListener('click', () => {
+        parent.postMessage({ hello: 'test' });
+      });
 
       // 避免webview添加storage為異步行為
       setTimeout(() => {
