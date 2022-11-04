@@ -84,16 +84,18 @@
     </div>
 
     <script>
+      document.querySelector('#post-messager').addEventListener('click', () => {
+        parent.postMessage({ hello: 'test' });
+      });
+    </script>
+
+    <!-- <script>
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       let webDeviceId = localStorage.getItem('deviceId') || '';
       let loadingFingerprint;
       let axiosInstance;
       let clipboard;
-
-      document.querySelector('#post-messager').addEventListener('click', () => {
-        parent.postMessage({ hello: 'test' });
-      });
 
       // 避免webview添加storage為異步行為
       setTimeout(() => {
@@ -221,6 +223,6 @@
         const regex = new RegExp(`(${rules.join('|')})`, 'ig');
         return Boolean(useragent.match(regex));
       }
-    </script>
+    </script> -->
   </body>
 </html>
