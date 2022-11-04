@@ -53,7 +53,8 @@
   margin-top: 50px;
 }
 
-.verification-device #device-code {
+.verification-device #device-code,
+.verification-device #pro-device-code {
   margin: 5px 0;
   display: block;
   color: #f00;

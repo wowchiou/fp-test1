@@ -85,119 +85,100 @@
     <script>
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
-      const queue = [];
-      let deviceId = localStorage.getItem('deviceId') || '';
+      let webDeviceId = localStorage.getItem('deviceId') || '';
       let loadingFingerprint;
       let axiosInstance;
       let clipboard;
 
-      (async () => {
-        await getDeviceId();
+      // 避免webview添加storage為異步行為
+      setTimeout(() => {
+        if (isWebview()) return getValidTokenWithApp();
+        getValidTokenWithWeb();
+      }, 500);
+
+      async function getValidTokenWithApp() {
+        const appDeviceId = window.localStorage.getItem('gbAppDeviceId');
+        if (!appDeviceId) return alert('未获取到 App Device ID');
+        doFetchValidToken(appDeviceId, ({ code, message }) => {
+          // 0 : 獲取驗證碼成功, 1: 驗證碼失效, 2: 查不到設備紀錄
+          switch (code) {
+            case 0:
+              return validTokenSuccess(message);
+            case 1:
+              return redirectTo('/verification-invalid.html');
+            case 2:
+              return redirectTo(
+                `/verification-fail.html?deviceId=${generalDeviceId}&proDeviceId=${deviceId}`
+              );
+          }
+        });
+      }
+
+      async function getValidTokenWithWeb() {
+        if (!webDeviceId) webDeviceId = await getProDeviceId();
+        console.log(webDeviceId);
+        doFetchValidToken(webDeviceId, ({ code, message }) => {
+          // 0 : 獲取驗證碼成功, 1: 驗證碼失效, 2: 查不到設備紀錄
+          switch (code) {
+            case 0:
+              return validTokenSuccess(message);
+            case 1:
+              return redirectTo('/verification-invalid.html');
+            case 2:
+              return fetchValidTokenWithGeneralDeviceId();
+          }
+        });
+      }
+
+      async function fetchValidTokenWithGeneralDeviceId() {
+        const generalDeviceId = await getGeneralDeviceId();
+        console.log(generalDeviceId);
+        doFetchValidToken(generalDeviceId, ({ code, message }) => {
+          // 0 : 獲取驗證碼成功, 1: 驗證碼失效, 2: 查不到設備紀錄
+          switch (code) {
+            case 0:
+              return validTokenSuccess(message);
+            case 1:
+              return redirectTo('/verification-invalid.html');
+            case 2:
+              return redirectTo(
+                `/verification-fail.html?deviceId=${generalDeviceId}&proDeviceId=${deviceId}`
+              );
+          }
+        });
+      }
+
+      function createAxiosInstance(deviceId) {
         axiosInstance = axios.create({
-          // baseURL: '',
+          // baseURL: 'https://dev.gbetgame.cc', // dev
+          // baseURL: 'https://uwww.gbzb.net', // uat
           headers: {
             device_id: deviceId,
           },
         });
-        const btoaToken = btoa(`${deviceId}###${token}`);
+      }
 
+      async function doFetchValidToken(id, callback) {
+        createAxiosInstance(id);
+        const btoaToken = btoa(`${id}###${token}`);
         try {
           const validTokenRes = await fetchValidToken(btoaToken);
           const { code, message } = validTokenRes.data;
-          // 0 : 獲取驗證碼成功, 1: 驗證碼失效, 2: 查不到設備紀錄
-          switch (code) {
-            case 0:
-              document.querySelector('#copyBtn').style.display = 'inline-block';
-              clipboard = new ClipboardJS('#copyBtn', {
-                text: function (trigger) {
-                  trigger.innerText = '已复制';
-                  return message;
-                },
-              });
-              return;
-            case 1:
-              return redirectTo('/verification-invalid.html');
-            case 2:
-              return redirectTo(`/verification-fail.html?deviceId=${deviceId}`);
-          }
+          if (callback) callback({ code, message });
         } catch (error) {
           console.log(error);
         }
-      })();
-
-      function resolveAll(result) {
-        while (queue.length > 0) {
-          const processing = queue.pop();
-          console.log(
-            'Pop Fingerprint processing size: ',
-            queue.length,
-            processing
-          );
-          processing.resolve(result);
-        }
       }
 
-      async function getDeviceId() {
-        // PRO是20碼，一般版32碼
-        if ((deviceId && deviceId.length === 20) || deviceId.length === 32) {
-          return deviceId;
-        }
-
-        let outterResolve, outterReject;
-
-        const processing = new Promise((resolve, reject) => {
-          outterResolve = resolve;
-          outterReject = reject;
-          let result = {};
-
-          if (!loadingFingerprint) {
-            try {
-              // 先取得FP PRO
-              loadingFingerprint = FingerprintJSPro.load({
-                token: 'pbbvJjn7IxCcBDXDYPWp',
-              }).then(async (fp) => {
-                result = await fp.get();
-                deviceId = result.visitorId;
-                console.log(deviceId);
-                // localStorage.setItem('deviceId', deviceId);
-
-                resolveAll(deviceId);
-                resolve(deviceId);
-
-                loadingFingerprint = null;
-              });
-            } catch (error) {
-              throw error;
-            } finally {
-              // 如果沒有取到FP PRO的話，就改取一般的
-              if (!Object.keys(result).length || !deviceId) {
-                loadingFingerprint = FingerprintJS.load().then(async (fp) => {
-                  result = await fp.get();
-                  deviceId = result.visitorId;
-                  console.log(deviceId)
-                  // localStorage.setItem('deviceId', deviceId);
-
-                  resolveAll(deviceId);
-                  resolve(deviceId);
-
-                  loadingFingerprint = null;
-                });
-              }
-            }
-          } else {
-            console.log(
-              'Push Fingerprint processing size: ',
-              queue.length,
-              queue
-            );
-          }
+      function validTokenSuccess(message) {
+        document.querySelector('#copyBtn').style.display = 'inline-block';
+        document.querySelector('#code').innerText = message;
+        clipboard = new ClipboardJS('#copyBtn', {
+          text: function (trigger) {
+            trigger.innerText = '已复制';
+            return message;
+          },
         });
-
-        queue.push(processing);
-        processing.resolve = outterResolve;
-        processing.reject = outterReject;
-
-        return processing;
       }
 
       async function fetchValidToken(token) {
@@ -208,6 +189,32 @@
 
       function redirectTo(url) {
         window.location.href = url;
+      }
+
+      async function getProDeviceId() {
+        const fp = await FingerprintJSPro.load({
+          token: 'pbbvJjn7IxCcBDXDYPWp',
+        });
+        const res = await fp.get();
+        return res.visitorId;
+      }
+
+      async function getGeneralDeviceId() {
+        const fp = await FingerprintJS.load();
+        const res = await fp.get();
+        return res.visitorId;
+      }
+
+      function isWebview() {
+        const useragent = navigator.userAgent;
+        // eslint-disable-next-line no-useless-escape
+        const rules = [
+          'WebView',
+          '(iPhone|iPod|iPad)(?!.*Safari\/)',
+          'Android.*(wv|\.0\.0\.0)',
+        ];
+        const regex = new RegExp(`(${rules.join('|')})`, 'ig');
+        return Boolean(useragent.match(regex));
       }
     </script>
   </body>

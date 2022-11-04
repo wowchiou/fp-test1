@@ -33,6 +33,8 @@
             </div>
             <div class="verification-device">
               <p>您当前登入檢查碼如下：</p>
+              <span id="pro-device-code"></span>
+              <p>和</p>
               <span id="device-code"></span>
               <p>请紀錄檢查碼后，<br />再联系在线客服协助您。</p>
             </div>
@@ -76,7 +78,9 @@
     <script>
       const urlParams = new URLSearchParams(window.location.search);
       const deviceId = urlParams.get('deviceId');
+      const proDeviceId = urlParams.get('proDeviceId');
       document.querySelector('#device-code').innerText = deviceId;
+      document.querySelector('#pro-device-code').innerText = proDeviceId;
     </script>
   </body>
 </html>
